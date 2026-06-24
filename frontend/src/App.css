@@ -1,0 +1,61 @@
+.app {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+}
+
+button {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.game-info {
+    margin-top: 24px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 64px);
+    grid-template-rows: repeat(8, 64px);
+    margin-top: 24px;
+    border: 2px solid #222;
+    width: fit-content;
+}
+
+.square {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.square.light {
+    background-color: #d0bea1;
+}
+
+.square.dark {
+    background-color: #424c54;
+}
+
+.piece {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.piece.white {
+    background-color: #b6b4b4;
+}
+
+.piece.black {
+    background-color: #2a2a2a;
+}

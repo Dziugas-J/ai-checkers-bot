@@ -14,7 +14,7 @@ def create_board() -> Board:
             if dark_square and row < 3:
                 current_row.append("black")
             elif dark_square and row > 4:
-                current_row.append("red")
+                current_row.append("white")
             else:
                 current_row.append("empty")
         board.append(current_row)
@@ -23,7 +23,7 @@ def create_board() -> Board:
 def create_new_game() -> GameState:
     return GameState(
         board=create_board(),
-        current_player="red",
+        current_player="white",
         winner=None,
         message="New game created",
     )
