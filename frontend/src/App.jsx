@@ -1,47 +1,48 @@
 import { useEffect, useState } from "react";
-import { CreateNewGame, GetLegalMoves, MakeMove } from "./Api";
+import { fetchNewGame, fetchLegalMoves, sendMove, sendBotMove } from "./Api";
 import "./App.css";
 
 function App() {
-    const [game, set_game] = useState(null);
-    const [loading, set_loading] = useState(false);
-    const [selected_piece, set_selected_piece] = useState(null);
-    const [possible_moves, set_possible_moves] = useState([]);
+    const [game, setGame] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [selectedPiece, setSelectedPiece] = useState(null);
+    const [possibleMoves, setPossibleMoves] = useState([]);
+    const [botDifficulty, setBotDifficulty] = useState("easy");
 
-    async function NewGame() {
-        set_loading(true);
-        set_selected_piece(null);
-        set_possible_moves([]);
+    async function startNewGame() {
+        setLoading(true);
+        setSelectedPiece(null);
+        setPossibleMoves([]);
 
-        const data = await CreateNewGame();
-        set_game(data);
+        const data = await fetchNewGame();
+        setGame(data);
 
-        set_loading(false);
+        setLoading(false);
     }
 
     useEffect(() => {
-        NewGame();
+        startNewGame();
     }, []);
 
-    function IsSelected(row, col) {
+    function isSquareSelected(row, col) {
         return (
-            selected_piece !== null &&
-            selected_piece.row === row &&
-            selected_piece.col === col
+            selectedPiece !== null &&
+            selectedPiece.row === row &&
+            selectedPiece.col === col
         );
     }
 
-    function GetPossibleMove(row, col) {
-        return possible_moves.find(
+    function getMoveForSquare(row, col) {
+        return possibleMoves.find(
             (move) => move.row === row && move.col === col
         );
     }
 
-    function IsPossibleMove(row, col) {
-        return GetPossibleMove(row, col) !== undefined;
+    function isPossibleMoveSquare(row, col) {
+        return getMoveForSquare(row, col) !== undefined;
     }
 
-    function GetNewGameButtonText() {
+    function getNewGameButtonText() {
         if (loading) {
             return "Loading...";
         }
@@ -49,124 +50,131 @@ function App() {
         return "New Game";
     }
 
-    function GetSquareClassName(row, col, possible_move) {
-        let square_class = "square";
+    function getSquareClassName(row, col, possibleMove) {
+        let squareClass = "square";
 
-        const is_dark_square = (row + col) % 2 === 1;
+        const isDarkSquare = (row + col) % 2 === 1;
 
-        if (is_dark_square) {
-            square_class += " dark";
+        if (isDarkSquare) {
+            squareClass += " dark";
         }
         else {
-            square_class += " light";
+            squareClass += " light";
         }
 
-        if (possible_move) {
-            square_class += " possible-move";
+        if (possibleMove) {
+            squareClass += " possible-move";
 
-            if (possible_move.is_capture) {
-                square_class += " capture-move";
+            if (possibleMove.is_capture) {
+                squareClass += " capture-move";
             }
         }
 
-        return square_class;
+        return squareClass;
     }
 
-    function ClearSelection() {
-        set_selected_piece(null);
-        set_possible_moves([]);
+    function clearSelectedPiece() {
+        setSelectedPiece(null);
+        setPossibleMoves([]);
     }
 
-    async function SelectPiece(row, col) {
-        const moves = await GetLegalMoves(game, row, col);
+    async function selectPieceAndLoadMoves(row, col) {
+        const moves = await fetchLegalMoves(game, row, col);
 
         if (moves.length === 0) {
-            ClearSelection();
+            clearSelectedPiece();
             return;
         }
 
-        set_selected_piece({ row, col });
-        set_possible_moves(moves);
+        setSelectedPiece({ row, col });
+        setPossibleMoves(moves);
     }
 
-    async function ApplyMove(target_row, target_col) {
-        const move = GetPossibleMove(target_row, target_col);
+    async function applySelectedMove(targetRow, targetCol) {
+        const selectedMove = getMoveForSquare(targetRow, targetCol);
 
-        if (!game || !selected_piece || !move) {
+        if (!game || !selectedPiece || !selectedMove) {
             return;
         }
 
-        const updated_game = await MakeMove(
+        const updatedGame = await sendMove(
             game,
-            selected_piece.row,
-            selected_piece.col,
-            target_row,
-            target_col
+            selectedPiece.row,
+            selectedPiece.col,
+            targetRow,
+            targetCol
         );
 
-        set_game(updated_game);
+        setGame(updatedGame);
 
-        if (updated_game.must_continue_capture && updated_game.forced_piece) {
-            set_selected_piece({
-                row: updated_game.forced_piece.row,
-                col: updated_game.forced_piece.col,
+        if (updatedGame.must_continue_capture && updatedGame.forced_piece){
+            setSelectedPiece({
+                row: updatedGame.forced_piece.row,
+                col: updatedGame.forced_piece.col,
             });
 
-            const next_moves = await GetLegalMoves(
-                updated_game,
-                updated_game.forced_piece.row,
-                updated_game.forced_piece.col
+            const nextMoves = await fetchLegalMoves(
+                updatedGame,
+                updatedGame.forced_piece.row,
+                updatedGame.forced_piece.col
             );
 
-            set_possible_moves(next_moves);
+            setPossibleMoves(nextMoves);
             return;
         }
 
-        ClearSelection();
+        if (updatedGame.current_player === "black"){
+            const gameAfterBotMove = await sendBotMove(updatedGame, botDifficulty);
+            setGame(gameAfterBotMove);
+            clearSelectedPiece();
+            return;
+        }
+
+        clearSelectedPiece();
     }
 
-    async function HandleSquareClick(row, col) {
+    async function handleSquareClick(row, col) {
         if (!game) {
             return;
         }
 
-        if (IsPossibleMove(row, col)) {
-            await ApplyMove(row, col);
+        if (isPossibleMoveSquare(row, col)) {
+            await applySelectedMove(row, col);
             return;
         }
 
         const piece = game.board[row][col];
 
         if (piece === "empty") {
-            ClearSelection();
+            clearSelectedPiece();
             return;
         }
 
-        if (IsSelected(row, col)) {
-            ClearSelection();
+        if (isSquareSelected(row, col)) {
+            clearSelectedPiece();
             return;
         }
 
-        await SelectPiece(row, col);
+        await selectPieceAndLoadMoves(row, col);
     }
 
-    function RenderPiece(piece, row, col) {
+    function renderPiece(piece, row, col) {
         if (piece === "empty") {
             return null;
         }
 
-        let piece_class = `piece ${piece}`;
+        let pieceClass = `piece ${piece}`;
 
-        if (IsSelected(row, col)) {
-            piece_class += " selected";
+        if (isSquareSelected(row, col)) {
+            pieceClass += " selected";
         }
 
         return (
-            <div className={piece_class}></div>
+            <div className={pieceClass}></div>
         );
     }
 
-    function RenderGame() {
+    function renderGame() {
         if (!game) {
             return null;
         }
@@ -176,23 +184,25 @@ function App() {
                 <p>
                     <strong>Current player:</strong> {game.current_player}
                 </p>
+
                 <div className="board">
-                    {game.board.map((row, row_index) =>
-                        row.map((piece, col_index) => {
-                            const possible_move = GetPossibleMove(row_index, col_index);
-                            const square_class = GetSquareClassName(
-                                row_index,
-                                col_index,
-                                possible_move
+                    {game.board.map((row, rowIndex) =>
+                        row.map((piece, colIndex) => {
+                            const possibleMove = getMoveForSquare(rowIndex, colIndex);
+
+                            const squareClass = getSquareClassName(
+                                rowIndex,
+                                colIndex,
+                                possibleMove
                             );
 
                             return (
                                 <div
-                                    key={`${row_index}-${col_index}`}
-                                    className={square_class}
-                                    onClick={() => HandleSquareClick(row_index, col_index)}
+                                    key={`${rowIndex}-${colIndex}`}
+                                    className={squareClass}
+                                    onClick={() => handleSquareClick(rowIndex, colIndex)}
                                 >
-                                    {RenderPiece(piece, row_index, col_index)}
+                                    {renderPiece(piece, rowIndex, colIndex)}
                                 </div>
                             );
                         })
@@ -206,11 +216,20 @@ function App() {
         <main className="app">
             <h1>AI Checkers Coach</h1>
 
-            <button onClick={NewGame} disabled={loading}>
-                {GetNewGameButtonText()}
+            <button onClick={startNewGame} disabled={loading}>
+                {getNewGameButtonText()}
             </button>
 
-            {RenderGame()}
+            <select
+                value={botDifficulty}
+                onChange={(event) => setBotDifficulty(event.target.value)}
+            >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            {renderGame()}
         </main>
     );
 }

@@ -13,6 +13,8 @@ Piece: TypeAlias = Literal[
 Player: TypeAlias = Literal["white", "black"]
 Board: TypeAlias = list[list[Piece]]
 
+Difficulty: TypeAlias = Literal["easy", "medium", "hard"]
+
 class Position(BaseModel):
     row: int
     col: int
@@ -41,3 +43,7 @@ class LegalMovesRequest(BaseModel):
     game: GameState
     row: int
     col: int
+
+class BotMoveRequest(BaseModel):
+    game: GameState
+    difficulty: Difficulty

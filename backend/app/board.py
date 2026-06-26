@@ -4,7 +4,7 @@ from app.models import Board
 BOARD_SIZE = 8
 
 
-def CreateBoard() -> Board:
+def create_board() -> Board:
     board = []
 
     for row in range(BOARD_SIZE):
@@ -25,9 +25,9 @@ def CreateBoard() -> Board:
     return board
 
 
-def CopyBoard(board: Board) -> Board:
+def copy_board(board: Board) -> Board:
     return [row.copy() for row in board]
 
 
-def IsInsideBoard(row: int, col: int) -> bool:
+def is_piece_in_board(row: int, col: int) -> bool:
     return row >= 0 and row < BOARD_SIZE and col >= 0 and col < BOARD_SIZE
