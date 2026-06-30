@@ -47,3 +47,30 @@ class LegalMovesRequest(BaseModel):
 class BotMoveRequest(BaseModel):
     game: GameState
     difficulty: Difficulty
+
+class MatchState(BaseModel):
+    game: GameState
+    difficulty: Difficulty
+    player_score: int = 0
+    computer_score: int = 0
+
+class NewMatchRequest(BaseModel):
+    difficulty: Difficulty
+
+class MatchMoveRequest(BaseModel):
+    match: MatchState
+    start_row: int
+    start_col: int
+    target_row: int
+    target_col: int
+
+class MatchLegalMovesRequest(BaseModel):
+    match: MatchState
+    row: int
+    col: int
+
+class HintRequest(BaseModel):
+    match: MatchState
+
+class HintResponse(BaseModel):
+    hint: str

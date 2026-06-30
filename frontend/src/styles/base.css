@@ -1,0 +1,68 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+.app {
+    min-height: 100vh;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f7f3eb;
+    color: #2a1a12;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.game-content.blurred {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.game-screen {
+    width: 560px;
+    max-width: 100%;
+    padding: 16px 0 24px;
+}
+
+.board-area {
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.top-game-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.turn-pill {
+    justify-self: start;
+    font-size: 16px;
+    color: #2a1a12;
+}
+
+.piece-count {
+    justify-self: center;
+    font-size: 16px;
+    color: #2a1a12;
+}
+
+.move-label {
+    margin-top: 24px;
+    font-weight: bold;
+    color: #6d5b4b;
+}

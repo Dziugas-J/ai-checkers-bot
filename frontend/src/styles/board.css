@@ -1,54 +1,52 @@
-.app {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 24px;
-    font-family: Arial, sans-serif;
-}
-
-button {
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.game-info {
-    margin-top: 24px;
+.board-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .board {
     display: grid;
     grid-template-columns: repeat(8, 64px);
     grid-template-rows: repeat(8, 64px);
-    margin-top: 24px;
-    border: 2px solid #222;
+
     width: fit-content;
+    border: 10px solid #4a2417;
+    border-radius: 16px;
+    overflow: hidden;
+
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
 .square {
     width: 64px;
     height: 64px;
+    position: relative;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
 }
 
 .square.light {
-    background-color: #d0bea1;
+    background-color: #e5d1b3;
 }
 
 .square.dark {
-    background-color: #424c54;
+    background-color: #8a4f33;
+}
+
+.square.possible-move::after,
+.square.capture-move::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
 }
 
 .square.possible-move::after {
-    content: "";
     width: 18px;
     height: 18px;
-    border-radius: 50%;
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 0 14px rgba(255, 255, 255, 0.95);
-    position: absolute;
 }
 
 .square.capture-move::after {
@@ -59,52 +57,52 @@ button {
 }
 
 .piece {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    box-sizing: border-box;
     cursor: pointer;
-    transition: box-shadow 0.15s ease, border 0.15s ease, transform 0.15s ease;
 }
 
 .piece.white,
 .piece.white_king {
-    background-color: #dfdede;
+    background-color: #f7f3eb;
+    border: 3px solid #b79b7a;
 }
 
 .piece.black,
 .piece.black_king {
-    background-color: #2a2a2a;
-    cursor: pointer;
+    background-color: #2a1a16;
+    border: 3px solid #44251c;
 }
 
 .piece.selected {
-    border: 3px solid #cdcdcd;
-    box-shadow: 0 0 20px #cccccc;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 18px #ffffff;
 }
 
 .piece.white_king,
 .piece.black_king {
     position: relative;
-    border-radius: 50%;
 }
 
 .piece.white_king::after,
 .piece.black_king::after {
     content: "";
     position: absolute;
+
     width: 28px;
     height: 28px;
     border-radius: 50%;
+
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
 .piece.white_king::after {
-    background-color: #2a2a2a;
+    background-color: #2a1a16;
 }
 
 .piece.black_king::after {
-    background-color: #f0f0f0;
+    background-color: #f7f3eb;
 }

@@ -165,7 +165,7 @@ def apply_bot_move(game: GameState, difficulty: Difficulty) -> GameState:
 
     current_game = game
 
-    while current_game.current_player == "black":
+    while current_game.current_player == "black" and current_game.winner is None:
         move_options = get_all_current_player_moves(current_game)
 
         if len(move_options) == 0:

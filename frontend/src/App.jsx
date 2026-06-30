@@ -1,162 +1,31 @@
-import { useEffect, useState } from "react";
-import { fetchNewGame, fetchLegalMoves, sendMove, sendBotMove } from "./Api";
-import "./App.css";
+import controllers from "./components/controllers";
+import {
+    capitalizeDifficulty,
+    countPieces,
+    getMoveForSquare,
+    getSquareClassName,
+    isSquareSelected,
+} from "./components/helpers";
+import "./styles/base.css";
+import "./styles/board.css";
+import "./styles/ui.css";
 
 function App() {
-    const [game, setGame] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [selectedPiece, setSelectedPiece] = useState(null);
-    const [possibleMoves, setPossibleMoves] = useState([]);
-    const [botDifficulty, setBotDifficulty] = useState("easy");
-
-    async function startNewGame() {
-        setLoading(true);
-        setSelectedPiece(null);
-        setPossibleMoves([]);
-
-        const data = await fetchNewGame();
-        setGame(data);
-
-        setLoading(false);
-    }
-
-    useEffect(() => {
-        startNewGame();
-    }, []);
-
-    function isSquareSelected(row, col) {
-        return (
-            selectedPiece !== null &&
-            selectedPiece.row === row &&
-            selectedPiece.col === col
-        );
-    }
-
-    function getMoveForSquare(row, col) {
-        return possibleMoves.find(
-            (move) => move.row === row && move.col === col
-        );
-    }
-
-    function isPossibleMoveSquare(row, col) {
-        return getMoveForSquare(row, col) !== undefined;
-    }
-
-    function getNewGameButtonText() {
-        if (loading) {
-            return "Loading...";
-        }
-
-        return "New Game";
-    }
-
-    function getSquareClassName(row, col, possibleMove) {
-        let squareClass = "square";
-
-        const isDarkSquare = (row + col) % 2 === 1;
-
-        if (isDarkSquare) {
-            squareClass += " dark";
-        }
-        else {
-            squareClass += " light";
-        }
-
-        if (possibleMove) {
-            squareClass += " possible-move";
-
-            if (possibleMove.is_capture) {
-                squareClass += " capture-move";
-            }
-        }
-
-        return squareClass;
-    }
-
-    function clearSelectedPiece() {
-        setSelectedPiece(null);
-        setPossibleMoves([]);
-    }
-
-    async function selectPieceAndLoadMoves(row, col) {
-        const moves = await fetchLegalMoves(game, row, col);
-
-        if (moves.length === 0) {
-            clearSelectedPiece();
-            return;
-        }
-
-        setSelectedPiece({ row, col });
-        setPossibleMoves(moves);
-    }
-
-    async function applySelectedMove(targetRow, targetCol) {
-        const selectedMove = getMoveForSquare(targetRow, targetCol);
-
-        if (!game || !selectedPiece || !selectedMove) {
-            return;
-        }
-
-        const updatedGame = await sendMove(
-            game,
-            selectedPiece.row,
-            selectedPiece.col,
-            targetRow,
-            targetCol
-        );
-
-        setGame(updatedGame);
-
-        if (updatedGame.must_continue_capture && updatedGame.forced_piece){
-            setSelectedPiece({
-                row: updatedGame.forced_piece.row,
-                col: updatedGame.forced_piece.col,
-            });
-
-            const nextMoves = await fetchLegalMoves(
-                updatedGame,
-                updatedGame.forced_piece.row,
-                updatedGame.forced_piece.col
-            );
-
-            setPossibleMoves(nextMoves);
-            return;
-        }
-
-        if (updatedGame.current_player === "black"){
-            const gameAfterBotMove = await sendBotMove(updatedGame, botDifficulty);
-            setGame(gameAfterBotMove);
-            clearSelectedPiece();
-            return;
-        }
-
-        clearSelectedPiece();
-    }
-
-    async function handleSquareClick(row, col) {
-        if (!game) {
-            return;
-        }
-
-        if (isPossibleMoveSquare(row, col)) {
-            await applySelectedMove(row, col);
-            return;
-        }
-
-        const piece = game.board[row][col];
-
-        if (piece === "empty") {
-            clearSelectedPiece();
-            return;
-        }
-
-        if (isSquareSelected(row, col)) {
-            clearSelectedPiece();
-            return;
-        }
-
-        await selectPieceAndLoadMoves(row, col);
-    }
+    const {
+        game,
+        selectedPiece,
+        possibleMoves,
+        botDifficulty,
+        hint,
+        difficultyDropdownOpen,
+        playerScore,
+        computerScore,
+        startNewGame,
+        handleSquareClick,
+        getHint,
+        toggleDifficultyDropdown,
+        selectDifficulty,
+    } = controllers();
 
     function renderPiece(piece, row, col) {
         if (piece === "empty") {
@@ -165,7 +34,7 @@ function App() {
 
         let pieceClass = `piece ${piece}`;
 
-        if (isSquareSelected(row, col)) {
+        if (isSquareSelected(selectedPiece, row, col)) {
             pieceClass += " selected";
         }
 
@@ -180,54 +49,145 @@ function App() {
         }
 
         return (
-            <section className="game-info">
-                <p>
-                    <strong>Current player:</strong> {game.current_player}
-                </p>
+            <div className="game-content">
+                <div className="game-screen">
+                    <div className="board-area">
+                        <section className="top-game-bar">
+                            <div className="turn-pill">
+                                Player <strong>{playerScore}</strong> :{" "}
+                                <strong>{computerScore}</strong> Computer
+                            </div>
 
-                <div className="board">
-                    {game.board.map((row, rowIndex) =>
-                        row.map((piece, colIndex) => {
-                            const possibleMove = getMoveForSquare(rowIndex, colIndex);
+                            <div className="piece-count">
+                                <strong>{countPieces(game, "white")}</strong> white ·{" "}
+                                <strong>{countPieces(game, "black")}</strong> black
+                            </div>
 
-                            const squareClass = getSquareClassName(
-                                rowIndex,
-                                colIndex,
-                                possibleMove
-                            );
-
-                            return (
-                                <div
-                                    key={`${rowIndex}-${colIndex}`}
-                                    className={squareClass}
-                                    onClick={() => handleSquareClick(rowIndex, colIndex)}
+                            <div className="custom-difficulty">
+                                <button
+                                    className="difficulty-select"
+                                    onClick={toggleDifficultyDropdown}
                                 >
-                                    {renderPiece(piece, rowIndex, colIndex)}
-                                </div>
-                            );
-                        })
-                    )}
+                                    <span>
+                                        {botDifficulty === null
+                                            ? "Medium"
+                                            : capitalizeDifficulty(botDifficulty)}
+                                    </span>
+                                </button>
+
+                                {difficultyDropdownOpen && (
+                                    <div className="difficulty-options">
+                                        <button
+                                            className={`difficulty-option ${botDifficulty === "easy" ? "active" : ""}`}
+                                            onClick={() => selectDifficulty("easy")}
+                                        >
+                                            Easy
+                                        </button>
+
+                                        <button
+                                            className={`difficulty-option ${botDifficulty === "medium" ? "active" : ""}`}
+                                            onClick={() => selectDifficulty("medium")}
+                                        >
+                                            Medium
+                                        </button>
+
+                                        <button
+                                            className={`difficulty-option ${botDifficulty === "hard" ? "active" : ""}`}
+                                            onClick={() => selectDifficulty("hard")}
+                                        >
+                                            Hard
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        <section className="board-section">
+                            <div className="board">
+                                {game.board.map((row, rowIndex) =>
+                                    row.map((piece, colIndex) => {
+                                        const possibleMove = getMoveForSquare(
+                                            possibleMoves,
+                                            rowIndex,
+                                            colIndex
+                                        );
+
+                                        const squareClass = getSquareClassName(
+                                            rowIndex,
+                                            colIndex,
+                                            possibleMove
+                                        );
+
+                                        return (
+                                            <div
+                                                key={`${rowIndex}-${colIndex}`}
+                                                className={squareClass}
+                                                onClick={() =>
+                                                    handleSquareClick(rowIndex, colIndex)
+                                                }
+                                            >
+                                                {renderPiece(piece, rowIndex, colIndex)}
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+
+                            <p className="move-label">
+                                {game.current_player === "white"
+                                    ? "Your move (White)"
+                                    : "Computer's move (Black)"}
+                            </p>
+
+                            <div className="game-buttons">
+                                <button
+                                    className="main-action-button"
+                                    onClick={() => startNewGame(botDifficulty || "easy")}
+                                >
+                                    New game
+                                </button>
+
+                                <button className="secondary-action-button" disabled>
+                                    Offer draw
+                                </button>
+
+                                <button
+                                    className="secondary-action-button"
+                                    onClick={getHint}
+                                >
+                                    Hint
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section className="coach-panel">
+                        <div className="coach-header">
+                            <h2>✣ AI Coach</h2>
+                            <span>Hints for the current board</span>
+                        </div>
+
+                        <button
+                            className="coach-question"
+                            onClick={getHint}
+                        >
+                            Give me a quick hint for my best move right now.
+                        </button>
+
+                        {hint && (
+                            <div className="hint-box">
+                                <p>{hint}</p>
+                            </div>
+                        )}
+                    </section>
                 </div>
-            </section>
+            </div>
         );
     }
 
     return (
         <main className="app">
             <h1>AI Checkers Coach</h1>
-
-            <button onClick={startNewGame} disabled={loading}>
-                {getNewGameButtonText()}
-            </button>
-
-            <select
-                value={botDifficulty}
-                onChange={(event) => setBotDifficulty(event.target.value)}
-            >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-            </select>
 
             {renderGame()}
         </main>

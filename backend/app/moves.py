@@ -234,6 +234,71 @@ def get_moves(
 
     return possible_moves
 
+def count_player_pieces(board: Board, player: Player) -> int:
+    count = 0
+
+    for row in board:
+        for piece in row:
+            if get_piece_owner(piece) == player:
+                count += 1
+
+    return count
+
+
+def can_player_move(game: GameState, player: Player) -> bool:
+    test_game = GameState(
+        board=game.board,
+        current_player=player,
+        winner=game.winner,
+        must_continue_capture=False,
+        forced_piece=None,
+    )
+
+    for row in range(BOARD_SIZE):
+        for col in range(BOARD_SIZE):
+            piece = game.board[row][col]
+
+            if get_piece_owner(piece) != player:
+                continue
+
+            legal_moves = get_moves(test_game, row, col)
+
+            if len(legal_moves) > 0:
+                return True
+
+    return False
+
+
+def get_winner(game: GameState) -> Player | None:
+    white_pieces = count_player_pieces(game.board, "white")
+    black_pieces = count_player_pieces(game.board, "black")
+
+    if white_pieces == 0:
+        return "black"
+
+    if black_pieces == 0:
+        return "white"
+
+    if not can_player_move(game, game.current_player):
+        return get_next_player(game.current_player)
+
+    return None
+
+
+def add_winner_if_game_finished(game: GameState) -> GameState:
+    winner = get_winner(game)
+
+    if winner is None:
+        return game
+
+    return GameState(
+        board=game.board,
+        current_player=game.current_player,
+        winner=winner,
+        must_continue_capture=False,
+        forced_piece=None,
+    )
+
 def apply_move(
     game: GameState,
     start_row: int,
@@ -290,10 +355,13 @@ def apply_move(
                 ),
             )
 
-    return GameState(
+    updated_game = GameState(
         board=new_board,
         current_player=get_next_player(game.current_player),
         winner=game.winner,
         must_continue_capture=False,
         forced_piece=None,
     )
+
+    return add_winner_if_game_finished(updated_game)
+
