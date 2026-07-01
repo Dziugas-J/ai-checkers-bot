@@ -272,6 +272,7 @@ function App() {
                                     className="secondary-action-button"
                                     onClick={offerDraw}
                                     disabled={
+                                        hintLoading ||
                                         drawOfferBy !== null ||
                                         surrenderBy !== null ||
                                         game.current_player !== "white"

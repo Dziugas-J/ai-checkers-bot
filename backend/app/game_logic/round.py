@@ -47,85 +47,85 @@ def create_new_round(difficulty: Difficulty) -> RoundState:
     )
 
 
-def create_route_with_game(round: RoundState, game: GameState) -> RoundState:
+def create_round_with_game(current_round: RoundState, game: GameState) -> RoundState:
     return RoundState(
         game=game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
-        draw_offer_by=round.draw_offer_by,
-        draw_offer_message=round.draw_offer_message,
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
-        surrender_by=round.surrender_by,
-        surrender_message=round.surrender_message,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
+        draw_offer_by=current_round.draw_offer_by,
+        draw_offer_message=current_round.draw_offer_message,
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
+        surrender_by=current_round.surrender_by,
+        surrender_message=current_round.surrender_message,
     )
 
 
 def create_round_with_draw_message(
-    round: RoundState,
+    current_round: RoundState,
     draw_offer_by: str | None,
     draw_offer_message: str | None,
 ) -> RoundState:
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by=draw_offer_by,
         draw_offer_message=draw_offer_message,
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
-        surrender_by=round.surrender_by,
-        surrender_message=round.surrender_message,
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
+        surrender_by=current_round.surrender_by,
+        surrender_message=current_round.surrender_message,
     )
 
 
-def clear_draw_message(round: RoundState) -> RoundState:
+def clear_draw_message(current_round: RoundState) -> RoundState:
     return create_round_with_draw_message(
-        round,
+        current_round,
         draw_offer_by=None,
         draw_offer_message=None,
     )
 
 
-def increment_turn_number(round: RoundState) -> RoundState:
+def increment_turn_number(current_round: RoundState) -> RoundState:
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
-        draw_offer_by=round.draw_offer_by,
-        draw_offer_message=round.draw_offer_message,
-        turn_number=round.turn_number + 1,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
-        surrender_by=round.surrender_by,
-        surrender_message=round.surrender_message,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
+        draw_offer_by=current_round.draw_offer_by,
+        draw_offer_message=current_round.draw_offer_message,
+        turn_number=current_round.turn_number + 1,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
+        surrender_by=current_round.surrender_by,
+        surrender_message=current_round.surrender_message,
     )
 
 
-def add_score_if_game_finished(round: RoundState) -> RoundState:
-    if round.game.winner is None:
-        return round
+def add_score_if_game_finished(current_round: RoundState) -> RoundState:
+    if current_round.game.winner is None:
+        return current_round
 
-    player_score = round.player_score
-    computer_score = round.computer_score
+    player_score = current_round.player_score
+    computer_score = current_round.computer_score
 
-    if round.game.winner == "white":
+    if current_round.game.winner == "white":
         player_score += 1
 
-    if round.game.winner == "black":
+    if current_round.game.winner == "black":
         computer_score += 1
 
     return RoundState(
         game=create_new_game(),
-        difficulty=round.difficulty,
+        difficulty=current_round.difficulty,
         player_score=player_score,
         computer_score=computer_score,
         draw_offer_by=None,
@@ -138,84 +138,84 @@ def add_score_if_game_finished(round: RoundState) -> RoundState:
 
 
 def get_player_legal_moves(
-    round: RoundState,
+    current_round: RoundState,
     row: int,
     col: int,
 ) -> list[LegalMove]:
-    if round.draw_offer_by == "black":
+    if current_round.draw_offer_by == "black":
         return []
 
-    if round.surrender_by is not None:
+    if current_round.surrender_by is not None:
         return []
 
     return get_legal_moves(
-        round.game,
+        current_round.game,
         row,
         col,
     )
 
-def create_round_with_bot_surrender(round: RoundState) -> RoundState:
+def create_round_with_bot_surrender(current_round: RoundState) -> RoundState:
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by=None,
         draw_offer_message=None,
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
         surrender_by="black",
         surrender_message="Computer gives up. You win!",
     )
 
 
 def apply_player_move_to_round(
-    round: RoundState,
+    current_round: RoundState,
     start_row: int,
     start_col: int,
     target_row: int,
     target_col: int,
 ) -> RoundState:
-    if round.game.current_player != "white":
-        return round
+    if current_round.game.current_player != "white":
+        return current_round
 
-    if round.draw_offer_by == "black":
-        return round
+    if current_round.draw_offer_by == "black":
+        return current_round
 
-    if round.surrender_by is not None:
-        return round
+    if current_round.surrender_by is not None:
+        return current_round
 
-    round = clear_draw_message(round)
+    current_round = clear_draw_message(current_round)
 
     game_after_player_move = apply_move(
-        round.game,
+        current_round.game,
         start_row,
         start_col,
         target_row,
         target_col,
     )
 
-    updated_round = create_route_with_game(
-        round,
+    updated_round = create_round_with_game(
+        current_round,
         game_after_player_move,
     )
 
     return add_score_if_game_finished(updated_round)
 
 
-def get_player_hint(round: RoundState) -> HintResponse:
-    if round.draw_offer_by == "black":
-        return HintResponse(hint="Respond to the draw offer first.")
+def get_player_hint(current_round: RoundState) -> HintResponse:
+    if current_round.game.current_player != "white":
+        return HintResponse(hint="Wait for your turn.")
 
-    if round.surrender_by is not None:
+    if current_round.surrender_by is not None:
         return HintResponse(hint="Computer has given up.")
 
-    if round.game.current_player == "white":
-        for row in range(len(round.game.board)):
-            for col in range(len(round.game.board[row])):
-                moves = get_legal_moves(round.game, row, col)
+    if current_round.game.current_player == "white":
+        for row in range(len(current_round.game.board)):
+            for col in range(len(current_round.game.board[row])):
+                moves = get_legal_moves(current_round.game, row, col)
 
                 for move in moves:
                     if move.is_capture:
@@ -227,67 +227,67 @@ def get_player_hint(round: RoundState) -> HintResponse:
                             target_col=move.col,
                         )
 
-    return get_ai_hint(round.game)
+    return get_ai_hint(current_round.game)
 
 
-def can_bot_offer_draw_now(round: RoundState) -> bool:
-    max_offers = BOT_DRAW_MAX_OFFERS[round.difficulty]
+def can_bot_offer_draw_now(current_round: RoundState) -> bool:
+    max_offers = BOT_DRAW_MAX_OFFERS[current_round.difficulty]
 
-    if round.bot_draw_offer_count >= max_offers:
+    if current_round.bot_draw_offer_count >= max_offers:
         return False
 
-    if round.last_bot_draw_offer_turn is None:
+    if current_round.last_bot_draw_offer_turn is None:
         return True
 
-    current_deficit = get_bot_material_deficit(round.game)
+    current_deficit = get_bot_material_deficit(current_round.game)
 
-    if round.last_bot_draw_offer_deficit is not None:
+    if current_round.last_bot_draw_offer_deficit is not None:
         deficit_got_much_worse = (
             current_deficit
-            >= round.last_bot_draw_offer_deficit + BOT_DRAW_WORSE_DEFICIT_STEP
+            >= current_round.last_bot_draw_offer_deficit + BOT_DRAW_WORSE_DEFICIT_STEP
         )
 
         if deficit_got_much_worse:
             return True
 
-    cooldown_turns = BOT_DRAW_COOLDOWN_TURNS[round.difficulty]
-    turns_since_last_offer = round.turn_number - round.last_bot_draw_offer_turn
+    cooldown_turns = BOT_DRAW_COOLDOWN_TURNS[current_round.difficulty]
+    turns_since_last_offer = current_round.turn_number - current_round.last_bot_draw_offer_turn
 
     return turns_since_last_offer >= cooldown_turns
 
 
-def create_round_with_bot_draw_offer(round: RoundState) -> RoundState:
+def create_round_with_bot_draw_offer(current_round: RoundState) -> RoundState:
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by="black",
         draw_offer_message="Computer offers a draw.",
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count + 1,
-        last_bot_draw_offer_turn=round.turn_number,
-        last_bot_draw_offer_deficit=get_bot_material_deficit(round.game),
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count + 1,
+        last_bot_draw_offer_turn=current_round.turn_number,
+        last_bot_draw_offer_deficit=get_bot_material_deficit(current_round.game),
     )
 
 
-def apply_bot_move(round: RoundState) -> RoundState:
-    if round.game.current_player != "black":
-        return round
+def apply_bot_move(current_round: RoundState) -> RoundState:
+    if current_round.game.current_player != "black":
+        return current_round
 
-    if round.game.winner is not None:
-        return round
+    if current_round.game.winner is not None:
+        return current_round
 
-    if round.surrender_by is not None:
-        return round
+    if current_round.surrender_by is not None:
+        return current_round
 
     game_after_bot_move = apply_bot_move_to_game(
-        round.game,
-        round.difficulty,
+        current_round.game,
+        current_round.difficulty,
     )
 
-    updated_round = create_route_with_game(
-        round,
+    updated_round = create_round_with_game(
+        current_round,
         game_after_bot_move,
     )
 
@@ -310,15 +310,15 @@ def apply_bot_move(round: RoundState) -> RoundState:
 
     return updated_round
 
-def finish_bot_surrender(round: RoundState) -> RoundState:
-    if round.surrender_by != "black":
-        return round
+def finish_bot_surrender(current_round: RoundState) -> RoundState:
+    if current_round.surrender_by != "black":
+        return current_round
 
     return RoundState(
         game=create_new_game(),
-        difficulty=round.difficulty,
-        player_score=round.player_score + 1,
-        computer_score=round.computer_score,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score + 1,
+        computer_score=current_round.computer_score,
         draw_offer_by=None,
         draw_offer_message=None,
         turn_number=0,
@@ -329,15 +329,15 @@ def finish_bot_surrender(round: RoundState) -> RoundState:
         surrender_message=None,
     )
 
-def accept_bot_draw(round: RoundState) -> RoundState:
-    if round.draw_offer_by != "black":
-        return round
+def accept_bot_draw(current_round: RoundState) -> RoundState:
+    if current_round.draw_offer_by != "black":
+        return current_round
 
     return RoundState(
         game=create_new_game(),
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by=None,
         draw_offer_message="Draw accepted. New game started.",
         turn_number=0,
@@ -347,45 +347,45 @@ def accept_bot_draw(round: RoundState) -> RoundState:
     )
 
 
-def decline_bot_draw(round: RoundState) -> RoundState:
-    if round.draw_offer_by != "black":
-        return round
+def decline_bot_draw(current_round: RoundState) -> RoundState:
+    if current_round.draw_offer_by != "black":
+        return current_round
 
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by=None,
         draw_offer_message="You declined the draw. Keep playing.",
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
     )
 
 
-def player_offer_draw_to_bot(round: RoundState) -> RoundState:
-    if round.game.winner is not None:
-        return round
+def player_offer_draw_to_bot(current_round: RoundState) -> RoundState:
+    if current_round.game.winner is not None:
+        return current_round
 
-    if round.draw_offer_by == "black":
-        return round
+    if current_round.draw_offer_by == "black":
+        return current_round
 
-    if round.surrender_by is not None:
-        return round
+    if current_round.surrender_by is not None:
+        return current_round
 
-    round = clear_draw_message(round)
+    current_round = clear_draw_message(current_round)
 
-    if bot_should_give_up(round.game):
-        return create_round_with_bot_surrender(round)
+    if bot_should_give_up(current_round.game):
+        return create_round_with_bot_surrender(current_round)
 
-    if should_bot_accept_player_draw(round.game, round.difficulty):
+    if should_bot_accept_player_draw(current_round.game, current_round.difficulty):
         return RoundState(
             game=create_new_game(),
-            difficulty=round.difficulty,
-            player_score=round.player_score,
-            computer_score=round.computer_score,
+            difficulty=current_round.difficulty,
+            player_score=current_round.player_score,
+            computer_score=current_round.computer_score,
             draw_offer_by=None,
             draw_offer_message="Computer accepted the draw. New game started.",
             turn_number=0,
@@ -397,16 +397,16 @@ def player_offer_draw_to_bot(round: RoundState) -> RoundState:
         )
 
     return RoundState(
-        game=round.game,
-        difficulty=round.difficulty,
-        player_score=round.player_score,
-        computer_score=round.computer_score,
+        game=current_round.game,
+        difficulty=current_round.difficulty,
+        player_score=current_round.player_score,
+        computer_score=current_round.computer_score,
         draw_offer_by=None,
         draw_offer_message="Computer declined the draw.",
-        turn_number=round.turn_number,
-        bot_draw_offer_count=round.bot_draw_offer_count,
-        last_bot_draw_offer_turn=round.last_bot_draw_offer_turn,
-        last_bot_draw_offer_deficit=round.last_bot_draw_offer_deficit,
+        turn_number=current_round.turn_number,
+        bot_draw_offer_count=current_round.bot_draw_offer_count,
+        last_bot_draw_offer_turn=current_round.last_bot_draw_offer_turn,
+        last_bot_draw_offer_deficit=current_round.last_bot_draw_offer_deficit,
         surrender_by=None,
         surrender_message=None,
     )

@@ -280,27 +280,21 @@ function useControllers() {
     }
 
     useEffect(() => {
-        if (!round) {
-            return;
-        }
+        if (!round) return;
+        if (surrenderBy !== "black") return;
 
-        if (surrenderBy !== "black") {
-            return;
-        }
+        const surrenderedRound = round;
 
         const timeoutId = setTimeout(async () => {
             clearSelectedPiece();
             clearHint();
 
-            const updatedRound = await sendFinishBotSurrender(round);
-
+            const updatedRound = await sendFinishBotSurrender(surrenderedRound);
             setRound(updatedRound);
         }, 3000);
 
-        return () => {
-            clearTimeout(timeoutId);
-        };
-    }, [round, surrenderBy]);
+        return () => clearTimeout(timeoutId);
+    }, [surrenderBy]);
 
     async function offerDraw() {
         if (!round) {
