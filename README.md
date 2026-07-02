@@ -51,14 +51,14 @@ https://ai-checkers-bot.onrender.com
 
 <img src="./screenshots/main.png" alt="Game board" width="700">
 
-### Choose Bot Difficulty
+### Choose Bot's Difficulty
 
 <img src="./screenshots/difficulty.png" alt="Choose bot difficulty" width="700">
 
-### AI Hint
+### Get suggestions from AI hint system
 
 <img src="./screenshots/hint.png" alt="AI hint" width="700">
 
-### Draw and Surrender Flow
+### Bot asks for a draw
 
 <img src="./screenshots/draw.png" alt="Draw or surrender flow" width="700">
