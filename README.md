@@ -49,16 +49,16 @@ https://ai-checkers-bot.onrender.com
 
 ### Game Board
 
-![Game board](./screenshots/game-board.png)
+<img src="./screenshots/main.png" alt="Game board" width="700">
 
 ### Choose Bot Difficulty
 
-![Choose bot difficulty](./screenshots/choose-difficulty.png)
+<img src="./screenshots/difficulty.png" alt="Choose bot difficulty" width="700">
 
 ### AI Hint
 
-![AI hint](./screenshots/ai-hint.png)
+<img src="./screenshots/hint.png" alt="AI hint" width="700">
 
 ### Draw and Surrender Flow
 
-![Draw or surrender flow](./screenshots/draw-surrender.png)
+<img src="./screenshots/draw.png" alt="Draw or surrender flow" width="700">
